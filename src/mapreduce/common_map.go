@@ -60,16 +60,18 @@ func doMap(
 			log.Fatal("Map: create ", err)
 			return
 		}
-		defer outFile.Close()
 		enc := json.NewEncoder(outFile)
+		var iRes []KeyValue
 		for _, kv := range resList {
 			if ihash(kv.Key) % uint32(nReduce) == uint32(i) {
-				err := enc.Encode(kv)
-				if err != nil {
-					debug("Map: JSON encoding error\n", err)
-				}
+				iRes = append(iRes, kv)
 			}
 		}
+		err = enc.Encode(&iRes)
+		if err != nil {
+			debug("Map: JSON encoding error\n", err)
+		}
+		outFile.Close()
 	}
 }
 
