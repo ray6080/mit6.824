@@ -24,5 +24,20 @@ func (mr *Master) schedule(phase jobPhase) {
 	//
 	// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
 	//
+
+	// get worker list
+	workerArray := []RegisterArgs {}
+	workerArray = append(workerArray, <- mr.registerChannel)
+
+	for i := 0; i < ntasks; i++ {
+		id := i % len(workerArray)
+		args := new(DoTaskArgs)
+		args.Phase = phase
+		args.JobName = mr.jobName
+		args.TaskNumber = i
+		args.NumOtherPhase = nios
+		args.File = mr.files[i]
+		
+	}
 	fmt.Printf("Schedule: %v phase done\n", phase)
 }
