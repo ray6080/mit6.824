@@ -7,7 +7,13 @@ import (
 	"strings"
 	"strconv"
 	"log"
+	"unicode"
 )
+
+// fields division function
+func Divide(c rune) bool {
+	return !unicode.IsLetter(c)
+}
 
 // The mapping function is called once for each piece of the input.
 // In this framework, the key is the name of the file that is being processed,
@@ -15,8 +21,8 @@ import (
 // key/value pairs, each represented by a mapreduce.KeyValue.
 func mapFunc(document string, value string) (res []mapreduce.KeyValue) {
 	// TODO: you have to write this function
-	for _, ele := range strings.Split(value, " ") {
-		kv := mapreduce.KeyValue{ele, string(1)}
+	for _, ele := range strings.FieldsFunc(value, Divide) {
+		kv := mapreduce.KeyValue{ele, "1"}
 		res = append(res, kv)
 	}
 	return
@@ -29,8 +35,11 @@ func reduceFunc(key string, values []string) string {
 	// TODO: you also have to write this function
 	var res int
 	for _, c := range values {
+		//cr := strconv.Quote(c)
+		//fmt.Printf("%s", cr)
 		cint, err := strconv.Atoi(c)
 		if err != nil {
+			fmt.Println(c)
 			log.Fatal("WC: atoi error", err)
 		}
 		res += cint

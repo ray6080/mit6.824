@@ -1,6 +1,9 @@
 package mapreduce
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 // schedule starts and waits for all tasks in the given phase (Map or Reduce).
 func (mr *Master) schedule(phase jobPhase) {
@@ -25,19 +28,37 @@ func (mr *Master) schedule(phase jobPhase) {
 	// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
 	//
 
-	// get worker list
-	workerArray := []RegisterArgs {}
-	workerArray = append(workerArray, <- mr.registerChannel)
+	doneChannel := make(chan int, ntasks)
 
 	for i := 0; i < ntasks; i++ {
-		id := i % len(workerArray)
-		args := new(DoTaskArgs)
-		args.Phase = phase
-		args.JobName = mr.jobName
-		args.TaskNumber = i
-		args.NumOtherPhase = nios
-		args.File = mr.files[i]
-		
+		fmt.Println("Current task %d",i)
+		go func(ntask int, nio int, p jobPhase) {
+			for {
+				worker := <-mr.registerChannel
+
+				args := new(DoTaskArgs)
+				args.Phase = p
+				args.JobName = mr.jobName
+				args.TaskNumber = ntask
+				args.NumOtherPhase = nio
+				args.File = mr.files[ntask]
+
+				ok := call(worker, "Worker.DoTask", args, new (struct {}))
+				if ok == false {
+					log.Fatal("Schedule: RPC call error.")
+				}
+				go func() {
+					doneChannel <- ntask
+					mr.registerChannel <- worker
+				}()
+				return
+			}
+		}(i, nios, phase)
 	}
+
+	for i := 0; i < ntasks; i++ {
+		<-doneChannel
+	}
+
 	fmt.Printf("Schedule: %v phase done\n", phase)
 }

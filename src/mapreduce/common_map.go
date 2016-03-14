@@ -67,7 +67,7 @@ func doMap(
 				iRes = append(iRes, kv)
 			}
 		}
-		err = enc.Encode(&iRes)
+		err = enc.Encode(iRes)
 		if err != nil {
 			debug("Map: JSON encoding error\n", err)
 		}

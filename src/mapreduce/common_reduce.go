@@ -4,7 +4,6 @@ import (
 	"os"
 	"encoding/json"
 	"log"
-	"fmt"
 )
 
 // doReduce does the job of a reduce worker: it reads the intermediate
@@ -49,18 +48,16 @@ func doReduce(
 		var iRes []KeyValue
 		err = dec.Decode(&iRes)
 		if err != nil {
-			debug("Reduce: decode error", err)
-			fmt.Printf("Erro :%q\n", err)
 			log.Fatal("Reduce: decode error", err)
 			break
 		}
 		for _, kv := range iRes {
+			//fmt.Println("{"+kv.Key+"->"+kv.Value+"}")
 			if _, ok := kvMap[kv.Key]; !ok {
 				var list []string
 				kvMap[kv.Key] = list
-			} else {
-				kvMap[kv.Key] = append(kvMap[kv.Key], kv.Value)
 			}
+			kvMap[kv.Key] = append(kvMap[kv.Key], kv.Value)
 		}
 		file.Close()
 	}
